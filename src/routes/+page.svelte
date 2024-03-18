@@ -7,7 +7,7 @@
 </script>
 
 <div
-	class="mx-auto flex h-screen w-full max-w-screen-md flex-col items-center justify-center gap-8 p-8"
+	class="mx-auto flex h-full min-h-screen w-full max-w-screen-md flex-col items-center justify-center gap-8 p-8"
 >
 	<div class="flex w-full flex-col items-center gap-4">
 		<div class="flex flex-wrap gap-2 text-5xl font-bold">
