@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { parse } from 'csv-parse';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { PostalCodeData, RateLimitData } from '$lib/types';
@@ -10,7 +11,8 @@ let data: PostalCodeData[] | null = null;
 async function loadData() {
 	let data: PostalCodeData[] = [];
 	try {
-		const parser = fs.createReadStream(`static/PostalCodeLatLong.csv`).pipe(
+		const dataPath = path.join(process.cwd(), 'src', 'lib', 'assets', 'PostalCodeLatLong.csv');
+		const parser = fs.createReadStream(dataPath).pipe(
 			parse({
 				columns: ['postalCode', 'latitude', 'longitude'],
 				skip_empty_lines: true
