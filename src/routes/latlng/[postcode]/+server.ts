@@ -10,7 +10,7 @@ let data: PostalCodeData[] | null = null;
 async function loadData() {
 	let data: PostalCodeData[] = [];
 	try {
-		const parser = fs.createReadStream(`PostalCodeLatLong.csv`).pipe(
+		const parser = fs.createReadStream(`static/PostalCodeLatLong.csv`).pipe(
 			parse({
 				columns: ['postalCode', 'latitude', 'longitude'],
 				skip_empty_lines: true
