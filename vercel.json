@@ -1,0 +1,7 @@
+{
+	"functions": {
+		"/fn": {
+			"includeFiles": "$lib/assets/PostalCodeLatLong.csv"
+		}
+	}
+}
