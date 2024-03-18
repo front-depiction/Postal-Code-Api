@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+		<script>
+			window.onload = function () {
+				if (navigator.userAgent.indexOf('iPhone') > -1) {
+					document
+						.querySelector('[name=viewport]')
+						.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+				}
+			};
+		</script>
+	</head>
+	<body class="no-scrollbar" data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
