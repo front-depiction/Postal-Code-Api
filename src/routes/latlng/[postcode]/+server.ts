@@ -1,7 +1,8 @@
 import { parse } from 'csv-parse';
-import type { RequestHandler } from '@sveltejs/kit';
+import { redirect, type RequestHandler } from '@sveltejs/kit';
 import type { PostalCodeData, RateLimitData } from '$lib/types';
 import { postalCodeData, rateLimitStore } from '$lib/stores';
+import { get } from 'svelte/store';
 
 // Function to load and parse CSV data
 async function loadData() {
@@ -21,30 +22,33 @@ async function loadData() {
 
 		const csvString = await response.text();
 
-		const records: PostalCodeData[] = [];
+		// Wrap the parsing in a new Promise
+		const records: PostalCodeData[] = await new Promise((resolve, reject) => {
+			const parser = parse(csvString, {
+				columns: ['postalCode', 'latitude', 'longitude'],
+				skip_empty_lines: true
+			});
 
-		const parser = parse(csvString, {
-			columns: ['postalCode', 'latitude', 'longitude'],
-			skip_empty_lines: true
+			const result: PostalCodeData[] = [];
+
+			parser.on('readable', function () {
+				let record;
+				while ((record = parser.read())) {
+					result.push(record);
+				}
+			});
+
+			parser.on('end', function () {
+				resolve(result); // Resolve the promise with the parsed data
+			});
+
+			parser.on('error', function (err) {
+				reject(err); // Reject the promise on error
+			});
 		});
 
-		parser.on('readable', function () {
-			let record;
-			while ((record = parser.read())) {
-				records.push(record);
-			}
-		});
-
-		parser.on('end', function () {
-			// All records have been parsed
-			console.log('CSV parsed successfully');
-		});
-
-		parser.on('error', function (err) {
-			console.error(err.message);
-		});
-
-		postalCodeData.set(records); // Update the store with the parsed data
+		// Update the store with the parsed data after parsing is complete
+		postalCodeData.set(records);
 	} catch (error) {
 		console.error(`Error loading data: ${error}`);
 	}
@@ -56,12 +60,7 @@ const WINDOW_SIZE_MS = 10 * 1000; // 10 seconds
 export const GET: RequestHandler = async (request) => {
 	const ip_address = request.getClientAddress();
 	const currentTimestamp = Date.now();
-	let rateLimitMap: Map<string, RateLimitData> = new Map();
-	rateLimitStore.subscribe((value) => {
-		rateLimitMap = value;
-		console.log('rateLimitMap', rateLimitMap);
-	})(); // Immediately invoked to unsubscribe right away
-
+	let rateLimitMap: Map<string, RateLimitData> = get(rateLimitStore);
 	// Rate limiting logic
 	let rateLimitData = rateLimitMap.get(ip_address);
 
@@ -105,17 +104,24 @@ export const GET: RequestHandler = async (request) => {
 	rateLimitStore.set(rateLimitMap);
 
 	// Load postal code data if not already loaded
-	let postalData: PostalCodeData[] = [];
-	postalCodeData.subscribe((value) => {
-		postalData = value;
-	})();
+	let postalData: PostalCodeData[] | undefined = get(postalCodeData);
 
-	if (!postalData || postalData.length === 0) {
+	if (!postalData) {
+		//load data and refresh the page to retry
+		console.log('Data not loaded. Loading data now', postalData);
+		const startTime = Date.now();
 		await loadData();
+		const endTime = Date.now();
+		console.log(`Data loaded in ${endTime - startTime} ms`);
+		postalData = get(postalCodeData);
+		console.log('postalData', postalData);
 	}
 
+	let result: PostalCodeData | undefined;
 	const postalCodeParam = request.params.postcode;
-	const result = postalData.find((d) => d.postalCode === postalCodeParam);
+	if (postalData) {
+		result = postalData.find((d) => d.postalCode === postalCodeParam);
+	}
 
 	if (result) {
 		return new Response(JSON.stringify(result), {
