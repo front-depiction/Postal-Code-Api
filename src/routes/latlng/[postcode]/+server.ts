@@ -3,13 +3,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 import type { PostalCodeData, RateLimitData } from '$lib/types';
 import { postalCodeData, rateLimitStore } from '$lib/stores';
 
-const data: PostalCodeData[] | null = null;
-
 // Function to load and parse CSV data
 async function loadData() {
 	try {
 		const response = await fetch(
-			'https://qhfb6vtepcyj0acw.public.blob.vercel-storage.com/PostalCodeLatLong-Ofla4LF8GXnTyBqI8iVZXUuGOYdtwG.csv',
+			'https://raw.githubusercontent.com/front-depiction/Postal_Code_Api/main/static/PostalCodeLatLong.csv',
 			{
 				headers: {
 					'Content-Type': 'text/csv'
@@ -39,7 +37,7 @@ async function loadData() {
 
 		parser.on('end', function () {
 			// All records have been parsed
-			console.log(records);
+			console.log('CSV parsed successfully');
 		});
 
 		parser.on('error', function (err) {
