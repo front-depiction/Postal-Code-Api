@@ -1,44 +1,59 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { parse } from 'csv-parse';
 import type { RequestHandler } from '@sveltejs/kit';
 import type { PostalCodeData, RateLimitData } from '$lib/types';
 import { postalCodeData, rateLimitStore } from '$lib/stores';
 
-let data: PostalCodeData[] | null = null;
+const data: PostalCodeData[] | null = null;
 
 // Function to load and parse CSV data
 async function loadData() {
-	let data: PostalCodeData[] = [];
 	try {
-		console.log('Current working directory:', process.cwd());
-		fs.readdir(process.cwd(), (err, files) => {
-			console.log('Files in the current directory:', files);
-		});
-		//now the files in the static folder are listed
-		fs.readdir(path.join(process.cwd(), 'static'), (err, files) => {
-			console.log('Files in the static directory:', files);
-		});
-		const dataPath = path.join('static', 'PostalCodeLatLong.csv');
-		const parser = fs.createReadStream(dataPath).pipe(
-			parse({
-				columns: ['postalCode', 'latitude', 'longitude'],
-				skip_empty_lines: true
-			})
+		const response = await fetch(
+			'https://qhfb6vtepcyj0acw.public.blob.vercel-storage.com/PostalCodeLatLong-Ofla4LF8GXnTyBqI8iVZXUuGOYdtwG.csv',
+			{
+				headers: {
+					'Content-Type': 'text/csv'
+				}
+			}
 		);
 
-		for await (const record of parser) {
-			data.push(record);
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
 		}
 
-		postalCodeData.set(data); // Update the store with the loaded data
+		const csvString = await response.text();
+
+		const records: PostalCodeData[] = [];
+
+		const parser = parse(csvString, {
+			columns: ['postalCode', 'latitude', 'longitude'],
+			skip_empty_lines: true
+		});
+
+		parser.on('readable', function () {
+			let record;
+			while ((record = parser.read())) {
+				records.push(record);
+			}
+		});
+
+		parser.on('end', function () {
+			// All records have been parsed
+			console.log(records);
+		});
+
+		parser.on('error', function (err) {
+			console.error(err.message);
+		});
+
+		postalCodeData.set(records); // Update the store with the parsed data
 	} catch (error) {
 		console.error(`Error loading data: ${error}`);
 	}
 }
 
-const MAX_REQUESTS = 30; // max requests per window per IP
-const WINDOW_SIZE_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 5; // max requests per window per IP
+const WINDOW_SIZE_MS = 10 * 1000; // 10 seconds
 
 export const GET: RequestHandler = async (request) => {
 	const ip_address = request.getClientAddress();
