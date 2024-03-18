@@ -11,6 +11,14 @@ let data: PostalCodeData[] | null = null;
 async function loadData() {
 	let data: PostalCodeData[] = [];
 	try {
+		console.log('Current working directory:', process.cwd());
+		fs.readdir(process.cwd(), (err, files) => {
+			console.log('Files in the current directory:', files);
+		});
+		//now the files in the static folder are listed
+		fs.readdir(path.join(process.cwd(), 'static'), (err, files) => {
+			console.log('Files in the static directory:', files);
+		});
 		const dataPath = path.join('static', 'PostalCodeLatLong.csv');
 		const parser = fs.createReadStream(dataPath).pipe(
 			parse({
