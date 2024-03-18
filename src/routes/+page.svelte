@@ -7,17 +7,17 @@
 </script>
 
 <div
-	class="mx-auto flex h-full min-h-screen w-full max-w-screen-md flex-col items-center justify-center gap-8 p-8"
+	class="no-scrollbar mx-auto flex h-full min-h-screen w-full max-w-screen-md flex-col items-center justify-center gap-8 p-8 py-32"
 >
 	<div class="flex w-full flex-col items-center gap-4">
-		<div class="flex flex-wrap gap-2 text-5xl font-bold">
+		<div class="flex flex-wrap gap-2 text-4xl font-bold md:text-5xl">
 			<h1>Project 1-2</h1>
 			<h1 class="w-fit bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
 				API
 			</h1>
 			<!-- <h1 class="text-4xl font-bold text-primary/80">{extensions[0]}</h1> -->
 		</div>
-		<p class="w-full text-center text-2xl font-light text-muted-foreground">
+		<p class="w-full text-center text-xl font-light text-muted-foreground md:text-2xl">
 			Forget about the hassle of working with API's that only work on University VPN's.
 		</p>
 	</div>
@@ -27,17 +27,18 @@
 			href="https://github.com/front-depiction/Postal-Code-Api"
 			class="shadow-lg shadow-primary/5 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10"
 			variant="default"
+			size="sm"
 		>
-			<Icons.gitHub class="mr-2 h-6 w-6 shrink-0" />GitHub Repository</Button
+			<Icons.gitHub class="mr-2 h-4 w-4 shrink-0" />GitHub Repository</Button
 		>
-		<Button variant="outline" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+		<Button variant="outline" size="sm" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 			>Download raw CSV</Button
 		>
 	</div>
 
 	<button class="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-		<p>how it works</p>
-		<ChevronDown class="h-6 w-6 shrink-0 animate-bounce" />
+		<p class="text-sm">how it works</p>
+		<ChevronDown class="h-4 w-4 shrink-0 animate-bounce" />
 	</button>
 
 	<Alert.Root>
@@ -46,7 +47,7 @@
 		<Alert.Description class="py-1"
 			>You can access the lat and long coordinates of any postal code with a simple GET request.</Alert.Description
 		>
-		<code class="text-sm font-normal"
+		<code class="whitespace-pre-wrap text-sm font-normal sm:text-xs"
 			>curl -X GET "https://postal-code-api-phi.vercel.app/latlng/<span class="text-purple-500"
 				>[postal code]</span
 			>"</code
@@ -61,7 +62,8 @@
 			and longitude. Here's an example of a successful response for a given postal code:
 		</Alert.Description>
 		<div class="relative">
-			<pre class="my-2 rounded-md bg-primary/5 p-2"><code class="text-sm font-normal opacity-80">
+			<pre class="my-2 rounded-md bg-primary/5 p-2"><code
+					class="whitespace-pre-wrap text-sm font-normal opacity-80 sm:text-xs">
         {JSON.stringify(
 						{
 							postalCode: '6227XB',
