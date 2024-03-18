@@ -38,10 +38,12 @@
 	"dependencies": {
 		"@sveltejs/adapter-vercel": "^5.1.0",
 		"@vercel/blob": "^0.22.1",
+		"bits-ui": "^0.19.7",
 		"clsx": "^2.1.0",
 		"csv-parse": "^5.5.5",
 		"eslint-plugin-unused-imports": "^3.1.0",
 		"lucide-svelte": "^0.341.0",
+		"mode-watcher": "^0.3.0",
 		"tailwind-merge": "^2.2.1",
 		"tailwind-variants": "^0.2.0"
 	}

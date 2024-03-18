@@ -1,27 +1,22 @@
 import { parse } from 'csv-parse';
-import { redirect, type RequestHandler } from '@sveltejs/kit';
+import { type RequestHandler } from '@sveltejs/kit';
 import type { PostalCodeData, RateLimitData } from '$lib/types';
 import { postalCodeData, rateLimitStore } from '$lib/stores';
 import { get } from 'svelte/store';
 
 // Function to load and parse CSV data
-async function loadData() {
+async function loadData(requestFetch: typeof fetch) {
 	try {
-		const response = await fetch(
-			'https://raw.githubusercontent.com/front-depiction/Postal_Code_Api/main/static/PostalCodeLatLong.csv',
-			{
-				headers: {
-					'Content-Type': 'text/csv'
-				}
+		const response = await requestFetch('/PostalCodeLatLong.csv', {
+			headers: {
+				'Content-Type': 'text/csv'
 			}
-		);
-
+		});
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
 
 		const csvString = await response.text();
-
 		// Wrap the parsing in a new Promise
 		const records: PostalCodeData[] = await new Promise((resolve, reject) => {
 			const parser = parse(csvString, {
@@ -58,9 +53,10 @@ const MAX_REQUESTS = 5; // max requests per window per IP
 const WINDOW_SIZE_MS = 10 * 1000; // 10 seconds
 
 export const GET: RequestHandler = async (request) => {
+	request.fetch;
 	const ip_address = request.getClientAddress();
 	const currentTimestamp = Date.now();
-	let rateLimitMap: Map<string, RateLimitData> = get(rateLimitStore);
+	const rateLimitMap: Map<string, RateLimitData> = get(rateLimitStore);
 	// Rate limiting logic
 	let rateLimitData = rateLimitMap.get(ip_address);
 
@@ -110,7 +106,7 @@ export const GET: RequestHandler = async (request) => {
 		//load data and refresh the page to retry
 		console.log('Data not loaded. Loading data now', postalData);
 		const startTime = Date.now();
-		await loadData();
+		await loadData(request.fetch);
 		const endTime = Date.now();
 		console.log(`Data loaded in ${endTime - startTime} ms`);
 		postalData = get(postalCodeData);
