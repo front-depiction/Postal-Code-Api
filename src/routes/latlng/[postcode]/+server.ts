@@ -11,7 +11,7 @@ let data: PostalCodeData[] | null = null;
 async function loadData() {
 	let data: PostalCodeData[] = [];
 	try {
-		const dataPath = path.join(process.cwd(), 'src', 'lib', 'assets', 'PostalCodeLatLong.csv');
+		const dataPath = path.join(process.cwd(), 'static', 'PostalCodeLatLong.csv');
 		const parser = fs.createReadStream(dataPath).pipe(
 			parse({
 				columns: ['postalCode', 'latitude', 'longitude'],
