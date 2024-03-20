@@ -57,38 +57,44 @@ export const GET: RequestHandler = async (request) => {
 	const ip_address = request.getClientAddress();
 	const currentTimestamp = Date.now();
 	const rateLimitMap: Map<string, RateLimitData> = get(rateLimitStore);
+	const unlimitedAccessKey = request.request.headers.get('x-Unlimited-Access-Key');
+	const unlimitedAccessKeys = JSON.parse(process.env.UNLIMITED_ACCESS_KEYS || '{}');
+	console.log('unlimitedAccessKey', unlimitedAccessKey, 'unlimitedAccessKeys', unlimitedAccessKeys);
+
 	// Rate limiting logic
 	let rateLimitData = rateLimitMap.get(ip_address);
 
 	if (rateLimitData) {
-		console.log(
-			'currentTimestamp',
-			currentTimestamp,
-			'rateLimitData.resetTime',
-			rateLimitData.resetTime,
-			'rateLimitData.count',
-			rateLimitData.count
-		);
-		if (currentTimestamp > rateLimitData.resetTime) {
-			// Reset the rate limit data if the current time is beyond the reset time
-			rateLimitData = { count: 1, resetTime: currentTimestamp + WINDOW_SIZE_MS };
-		} else {
-			// Increment the request count within the current rate limit window
-			rateLimitData.count++;
-		}
+		if (!unlimitedAccessKey || !unlimitedAccessKeys[unlimitedAccessKey]) {
+			console.log(
+				'currentTimestamp',
+				currentTimestamp,
+				'rateLimitData.resetTime',
+				rateLimitData.resetTime,
+				'rateLimitData.count',
+				rateLimitData.count
+			);
+			if (currentTimestamp > rateLimitData.resetTime) {
+				// Reset the rate limit data if the current time is beyond the reset time
+				rateLimitData = { count: 1, resetTime: currentTimestamp + WINDOW_SIZE_MS };
+			} else {
+				// Increment the request count within the current rate limit window
+				rateLimitData.count++;
+			}
 
-		// Check if the request limit has been exceeded
-		if (rateLimitData.count > MAX_REQUESTS) {
-			// Calculate the Retry-After duration in seconds
-			const retryAfter = Math.round((rateLimitData.resetTime - currentTimestamp) / 1000);
+			// Check if the request limit has been exceeded
+			if (rateLimitData.count > MAX_REQUESTS) {
+				// Calculate the Retry-After duration in seconds
+				const retryAfter = Math.round((rateLimitData.resetTime - currentTimestamp) / 1000);
 
-			return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
-				status: 429, // Too Many Requests
-				headers: {
-					'Content-Type': 'application/json',
-					'Retry-After': `${retryAfter}`
-				}
-			});
+				return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+					status: 429, // Too Many Requests
+					headers: {
+						'Content-Type': 'application/json',
+						'Retry-After': `${retryAfter}`
+					}
+				});
+			}
 		}
 	} else {
 		// Initialize rate limit data for a new IP address
